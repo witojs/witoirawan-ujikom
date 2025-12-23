@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject _foodPrefab;
     private Animator _animator;
     private Rigidbody _rigidbody;
+    private float _horizontalInput;
 
     private void Awake()
     {
@@ -17,21 +18,14 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // float horizontalInput = Input.GetAxis("Horizontal");
-        // //get the Input from Vertical axis
-        // float verticalInput = Input.GetAxis("Vertical");
-        // transform.position = transform.position + new Vector3(horizontalInput * _speed * Time.deltaTime, verticalInput * _speed * Time.deltaTime, 0);
-
+        _horizontalInput = Input.GetAxis("Horizontal");
         if (Input.GetKeyDown(KeyCode.A))
         {
-            // _animator.SetBool("isLeft", true);
             _animator.SetTrigger("strafe-left");
-            gameObject.transform.Translate(Vector3.left * _speed * Time.deltaTime);
         }
         if (Input.GetKeyDown(KeyCode.D))
         {
             _animator.SetTrigger("strafe-right");
-            gameObject.transform.Translate(Vector3.right * _speed * Time.deltaTime);
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -39,11 +33,18 @@ public class PlayerController : MonoBehaviour
             ThrowFood();
         }
     }
-    
+
+    private void FixedUpdate()
+    {
+        _rigidbody.linearVelocity = new Vector3(_horizontalInput * _speed, _rigidbody.linearVelocity.y, 0f);
+    }
+
     private void ThrowFood()
     {
         var food = Instantiate(_foodPrefab, _spawnPoint.position, _spawnPoint.rotation);
-        food.GetComponent<Rigidbody>().linearVelocity = transform.TransformDirection(Vector3.forward * 300 * Time.deltaTime);
+        // food.GetComponent<Rigidbody>().linearVelocity = transform.TransformDirection(Vector3.forward * 300 * Time.deltaTime);
+        food.GetComponent<Rigidbody>().linearVelocity = _spawnPoint.transform.forward * 10;
+        // food.GetComponent<Rigidbody>().linearVelocity = _spawnPoint.forward * 300;
         Destroy(food, 3f);
     }
 }
