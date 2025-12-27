@@ -12,6 +12,7 @@ public class CharacterLocomotion : MonoBehaviour
     private float _currentSpeed;
     private float _speedVelocity;
     private float _coyoteTimeCounter;
+    private int _airJumpsLeft;
 
     private void Awake()
     {
@@ -59,6 +60,7 @@ public class CharacterLocomotion : MonoBehaviour
         if (IsGrounded())
         {
             _coyoteTimeCounter = _stats.coyoteTime; // Reset timer while on ground
+            _airJumpsLeft = _stats.extraJumpsAllowed;
         }
         else
         {
@@ -69,18 +71,23 @@ public class CharacterLocomotion : MonoBehaviour
         _anim.SetBool("isGrounded", IsGrounded());
     }
     
-    public void Jump()
+    public bool Jump()
     {
         if (_coyoteTimeCounter > 0f)
         {
-            // Apply upward force. ForceMode.Impulse is best for instant actions like jumping.
-            _rb.AddForce(Vector3.up * _stats.jumpForce, ForceMode.Impulse);
-            
-            // Trigger the animation
-            _anim.SetTrigger("Jump");
-            
+            PerformJump(_stats.jumpForce);
             _coyoteTimeCounter = 0f;
+            return true;
         }
+        
+        if (_stats.allowDoubleJump && _airJumpsLeft > 0)
+        {
+            _airJumpsLeft--;
+            PerformJump(_stats.jumpForce * _stats.doubleJumpForceMultiplier);
+            return true;
+        }
+        
+        return false;
     }
 
     public void OnJumpReleased()
@@ -118,5 +125,18 @@ public class CharacterLocomotion : MonoBehaviour
             // Apply extra gravity to stop the upward momentum quickly
             _rb.linearVelocity += Vector3.up * Physics.gravity.y * (_stats.lowjumpMultiplier - 1) * Time.fixedDeltaTime;
         }
+    }
+
+    private void PerformJump(float force)
+    {
+        // Reset vertical velocity before double jumping 
+        // This makes the second jump feel consistent even if falling fast
+        _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
+
+        _rb.AddForce(Vector3.up * force, ForceMode.Impulse);
+        
+        // Restart the animation
+        _anim.ResetTrigger("Jump");
+        _anim.SetTrigger("Jump");
     }
 }

@@ -19,4 +19,8 @@ public class MovementData : ScriptableObject
     public float fallMultiplier = 2.5f;
     public float lowjumpMultiplier = 2f; // higher = shorter hop
     
+    [Header("Double Jump Settings")]
+    public bool allowDoubleJump = true;
+    public int extraJumpsAllowed = 1; // Set to 1 for Double Jump, 2 for Triple Jump, etc.
+    public float doubleJumpForceMultiplier = 0.8f;
 }

@@ -4,6 +4,10 @@ public class PlayerControl : MonoBehaviour
 {
     private CharacterLocomotion _locomotion;
     private float _hInput, _vInput;
+    
+    [Header("Input Setting")]
+    [SerializeField] private float _jumpBufferTime = 0.2f;
+    private float _jumpBufferCounter;
 
     void Start() => _locomotion = GetComponent<CharacterLocomotion>();
 
@@ -21,7 +25,20 @@ public class PlayerControl : MonoBehaviour
         // 1. Initial Jump Press
         if (Input.GetButtonDown("Jump"))
         {
-            _locomotion.Jump();
+            _jumpBufferCounter = _jumpBufferTime;
+        }
+        else
+        {
+            _jumpBufferCounter -= Time.deltaTime;
+        }
+        
+        if (_jumpBufferCounter > 0f)
+        {
+            // We call the locomotion Jump. It returns 'true' if the jump actually happened
+            if (_locomotion.Jump())
+            {
+                _jumpBufferCounter = 0f; // Clear the buffer so we don't jump twice
+            }
         }
 
         // 2. Detect Button Release
